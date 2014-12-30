@@ -61,7 +61,7 @@ var newMessage = {
   'text': 'Can\'t touch this',
   'roomname': 'backAlley'
 };
-app.send(newMessage);
+//app.send(newMessage);
 app.fetch();
 
 
