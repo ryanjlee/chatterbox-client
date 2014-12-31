@@ -2,11 +2,14 @@
 
 var app = {};
 app.init = function() {};
+
+app.currentRoom = '<script>background-color: red</script>';
+
 app.send = function(message) {
   var newMessage = {
     'username': window.location.search.substring(10),
     'text': message,
-    'roomname': '<script>background-color: red</script>'
+    'roomname': app.currentRoom
   };
   $.ajax({
     url: 'https://api.parse.com/1/classes/chatterbox',
@@ -30,7 +33,7 @@ app.checkHacks = function(value){
   return value;
 };
 
-app.fetch = function() {
+app.fetch = function(room) {
 
   $.ajax({
     url: 'https://api.parse.com/1/classes/chatterbox?order=-createdAt',
@@ -43,7 +46,15 @@ app.fetch = function() {
       _.each(messages, function(object) {
         var name = app.checkHacks(object.username);
         var text = app.checkHacks(object.text);
-        var string = '<li>'+ object.createdAt + '://////      ' + name + ': ' + text + '</li>';
+        var currRoom = app.checkHacks(object.roomname);
+
+        if(room && room === currRoom){
+          var string = '<li><strong>' + name + '</strong>: ' + text + '</li>';
+        }
+        else if(!room){
+          var string = '<li><strong>' + name + '</strong>: ' + text + '</li>';
+        }
+
         $('#main').append(string);
       });
     }
@@ -77,7 +88,7 @@ app.fetch();
 
 
 $(document).ready(function() {
-  $('#target').submit(function(event) {
+  $('#message').submit(function(event) {
     if ($('input:first').val()) {
       app.send($('input:first').val());
       $('input:first').val('');
@@ -86,6 +97,21 @@ $(document).ready(function() {
   });
 });
 
+$(document).ready(function() {
+  $('#room').submit(function(event) {
+    if ($('#roomtext').val()) {
+      app.currentRoom = $('#roomtext').val();
+      $('#roomtext').val('');
+    }
+    event.preventDefault();
+  });
+});
+
+$(document).ready(function() {
+  $('#rooms').on('click', 'p', function() {
+    app.fetch($(this).text());
+  });
+});
 
 app.getRooms = function(){
   var rooms =  {};
@@ -105,7 +131,6 @@ app.getRooms = function(){
         var string = '<p>'+ key + '</p>';
         $('#rooms').append(string);
       }
-
     }
   });
   return rooms;
